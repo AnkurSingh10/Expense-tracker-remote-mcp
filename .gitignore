@@ -9,3 +9,5 @@ wheels/
 # Virtual environments
 .venv
 expenses.db
+old_main.py
+.env

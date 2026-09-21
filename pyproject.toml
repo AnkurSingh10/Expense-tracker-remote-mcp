@@ -9,7 +9,9 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
 	"aiosqlite>=0.22.1",
-    "fastmcp>=4.0.5",
+	"fastmcp>=4.0.5",
+	"psycopg[binary]>=3.2",
+	"python-dotenv>=1.2.3",
 ]
 
 [project.scripts]
