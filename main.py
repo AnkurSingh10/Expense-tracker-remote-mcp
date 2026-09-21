@@ -40,7 +40,7 @@ def init_db():
 init_db()
 
 @mcp.tool()
-async def add_expense(
+async def add_expenses(
     date: str,
     amount: float,
     category: str,
