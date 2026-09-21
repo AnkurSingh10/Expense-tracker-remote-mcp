@@ -10,11 +10,14 @@ from psycopg.rows import dict_row
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("neon_api") or os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError("Set neon_api or DATABASE_URL in .env")
-
 CATEGORIES_PATH = os.path.join(os.path.dirname(__file__), "categories.json")
+
+
+def get_database_url():
+    database_url = os.getenv("neon_api") or os.getenv("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("Set DATABASE_URL in the FastMCP Cloud environment")
+    return database_url
 
 
 def run_async(coroutine):
@@ -24,7 +27,7 @@ def run_async(coroutine):
 
 
 def init_db():
-    with psycopg.connect(DATABASE_URL) as connection:
+    with psycopg.connect(get_database_url()) as connection:
         with connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -62,7 +65,7 @@ async def add_expenses(
     """Add a new expense entry to the Neon database."""
     try:
         with psycopg.connect(
-            DATABASE_URL, row_factory=dict_row
+            get_database_url(), row_factory=dict_row
         ) as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -85,7 +88,7 @@ async def list_expenses(start_date: str, end_date: str):
     """List expense entries within an inclusive date range."""
     try:
         with psycopg.connect(
-            DATABASE_URL, row_factory=dict_row
+            get_database_url(), row_factory=dict_row
         ) as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -118,7 +121,7 @@ async def summarize(start_date: str, end_date: str, category: str | None = None)
         query += " GROUP BY category ORDER BY total_amount DESC"
 
         with psycopg.connect(
-            DATABASE_URL, row_factory=dict_row
+            get_database_url(), row_factory=dict_row
         ) as connection:
             with connection.cursor() as cursor:
                 cursor.execute(query, params)
@@ -131,7 +134,7 @@ async def summarize(start_date: str, end_date: str, category: str | None = None)
 async def delete_expenses(expense_id: int):
     """Delete an expense from the Neon database."""
     try:
-        with psycopg.connect(DATABASE_URL) as connection:
+        with psycopg.connect(get_database_url()) as connection:
             with connection.cursor() as cursor:
                 cursor.execute("DELETE FROM expenses WHERE id = %s", (expense_id,))
                 deleted = cursor.rowcount > 0
@@ -164,7 +167,7 @@ async def update_expenses(
         return {"status": "error", "message": "No fields to update"}
 
     try:
-        with psycopg.connect(DATABASE_URL) as connection:
+        with psycopg.connect(get_database_url()) as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"UPDATE expenses SET {', '.join(fields)} WHERE id = %s",
@@ -182,7 +185,7 @@ async def credit_money(amount: float, note: str = ""):
     """Add a credit entry to the Neon database."""
     try:
         with psycopg.connect(
-            DATABASE_URL, row_factory=dict_row
+            get_database_url(), row_factory=dict_row
         ) as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -205,7 +208,7 @@ async def get_balance():
     """Calculate the current balance based on expenses and credits."""
     try:
         with psycopg.connect(
-            DATABASE_URL, row_factory=dict_row
+            get_database_url(), row_factory=dict_row
         ) as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
